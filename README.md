@@ -7,3 +7,4 @@ Initial idea and planned outline:
 - Stream the window aggregate data from Flink to a Postgres table/Timescale hypertable.
 - Visualize live and historical data with Streamlit.
 
+![Project diagram](./diagram.png)
