@@ -8,3 +8,19 @@ Initial idea and planned outline:
 - Visualize live and historical data with Streamlit.
 
 ![Project diagram](./diagram.png)
+
+---
+
+Setup before running the project:
+- `poetry install`
+- (optional) `docker compose --profile cc pull`
+
+Running the project:
+- If you don't want/need Control Center running: `docker compose up -d`
+- If you DO want Control Center: `docker compose --profile cc up -d`
+- Create the `measurements` topic:
+```
+docker exec kafka1 /bin/bash -c "kafka-topics --create --topic measurements --bootstrap-server localhost:9092"
+```
+- Activate the virtual environment with the dependencies of this project: `poetry shell`
+- Start producing measurements: `python measurement_spammer/spam_measurements.py`
