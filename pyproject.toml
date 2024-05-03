@@ -13,7 +13,12 @@ fastavro = "^1.9.4"
 requests = "^2.31.0"
 duckdb = "^0.10.2"
 streamlit = "^1.34.0"
+psutil = "^5.9.8"
 
+
+[tool.poetry.group.dev.dependencies]
+types-confluent-kafka = "^1.2.1"
+types-psutil = "^5.9.5.20240423"
 
 [build-system]
 requires = ["poetry-core"]
