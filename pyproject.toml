@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "streaming-and-processing-cpu-and-ram-usage"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+confluent-kafka = "^2.3.0"
+apache-flink = "^1.19.0"
+fastavro = "^1.9.4"
+requests = "^2.31.0"
+duckdb = "^0.10.2"
+streamlit = "^1.34.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
