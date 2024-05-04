@@ -67,7 +67,11 @@ def process(
 
     t_env.execute_sql(kafka_topic_ddl)
     t_env.execute_sql(postgres_sink_ddl)
-    t_env.execute_sql(sink_query).wait()
+
+    print("Submitting Flink job.")
+    result = t_env.execute_sql(sink_query)
+    print("Submitted succesfully. Stream is now running.")
+    result.wait()
 
 
 if __name__ == "__main__":
