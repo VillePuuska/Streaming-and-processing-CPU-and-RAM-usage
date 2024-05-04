@@ -12,11 +12,6 @@ from confluent_kafka.serialization import (
     IntegerSerializer,
 )
 
-MACHINE_ID = 1
-SCHEMA_PATH = "avro/schema.avsc"
-KAFKA_CONN = "localhost:9092"
-SCHEMA_REGISTRY_CONN = "http://localhost:8081"
-
 
 @click.command()
 @click.option(
@@ -40,25 +35,61 @@ SCHEMA_REGISTRY_CONN = "http://localhost:8081"
     help="""Flag for (dis)allowing the script to create a new topic if the specified topic does not yet exist.
     Default: disallow""",
 )
-def spam(interval: float, topic: str, allow_new_topic: bool):
+@click.option(
+    "--machine-id",
+    type=int,
+    default=1,
+    help="""The `machine_id` in the records sent to Kafka.
+    Default: 1""",
+)
+@click.option(
+    "--schema-path",
+    type=str,
+    default="avro/schema.avsc",
+    help="""Path to the AVRO schema file. Can be relative or absolute.
+    Default: avro/schema.avsc""",
+)
+@click.option(
+    "--broker",
+    type=str,
+    default="localhost:9092",
+    help="""Kafka bootstrap servers.
+    Default: localhost:9092""",
+)
+@click.option(
+    "--schema-registry",
+    type=str,
+    default="http://localhost:8081",
+    help="""URL to the schema registry.
+    Default: http://localhost:8081""",
+)
+def spam(
+    interval: float,
+    topic: str,
+    allow_new_topic: bool,
+    machine_id: int,
+    schema_path: str,
+    broker: str,
+    schema_registry: str,
+):
     """
     Script to send CPU and RAM usage measurements to a specified Kafka topic.
     """
 
-    if not allow_new_topic and not check_topic_exists(topic=topic, broker=KAFKA_CONN):
+    if not allow_new_topic and not check_topic_exists(topic=topic, broker=broker):
         raise Exception(
             "Topic does not exist. Set `--allow-new-topic` if you want the script to create the topic."
         )
 
-    schema_registry_client = SchemaRegistryClient({"url": SCHEMA_REGISTRY_CONN})
+    schema_registry_client = SchemaRegistryClient({"url": schema_registry})
 
-    with open(SCHEMA_PATH) as f:
+    with open(schema_path) as f:
         schema = Schema(f.read(), "AVRO")
 
     serializer = AvroSerializer(schema_registry_client, schema)
     key_serializer = IntegerSerializer()
 
-    producer = Producer({"bootstrap.servers": KAFKA_CONN})
+    producer = Producer({"bootstrap.servers": broker})
 
     try:
         prev_time = time.time()
@@ -68,7 +99,7 @@ def spam(interval: float, topic: str, allow_new_topic: bool):
 
             for k, v in readings.items():
                 message = {
-                    "machine_id": MACHINE_ID,
+                    "machine_id": machine_id,
                     "measurement_timestamp": timestamp,
                     "measurement_name": k,
                     "value": v,
@@ -77,7 +108,7 @@ def spam(interval: float, topic: str, allow_new_topic: bool):
                 producer.produce(
                     topic=topic,
                     key=key_serializer(
-                        MACHINE_ID,
+                        machine_id,
                         SerializationContext(topic, MessageField.KEY),
                     ),
                     value=serializer(
