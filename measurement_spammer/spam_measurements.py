@@ -1,4 +1,5 @@
 from utils.readings import get_readings
+from utils.kafka_helpers import check_topic_exists
 import time
 import click
 
@@ -33,10 +34,22 @@ SCHEMA_REGISTRY_CONN = "http://localhost:8081"
     help="""Kafka topic to send measurements to.
     Default: measurements""",
 )
-def spam(interval: float, topic: str):
+@click.option(
+    "--allow-new-topic/--disallow-new-topic",
+    default=False,
+    help="""Flag for (dis)allowing the script to create a new topic if the specified topic does not yet exist.
+    Default: disallow""",
+)
+def spam(interval: float, topic: str, allow_new_topic: bool):
     """
     Script to send CPU and RAM usage measurements to a specified Kafka topic.
     """
+
+    if not allow_new_topic and not check_topic_exists(topic=topic, broker=KAFKA_CONN):
+        raise Exception(
+            "Topic does not exist. Set `--allow-new-topic` if you want the script to create the topic."
+        )
+
     schema_registry_client = SchemaRegistryClient({"url": SCHEMA_REGISTRY_CONN})
 
     with open(SCHEMA_PATH) as f:
