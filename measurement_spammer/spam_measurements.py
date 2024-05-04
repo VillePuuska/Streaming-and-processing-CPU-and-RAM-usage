@@ -1,5 +1,5 @@
 from utils.readings import get_readings
-from utils.kafka_helpers import check_topic_exists
+from utils.kafka_helpers import check_topic_exists, producer_callback
 import time
 import click
 
@@ -105,6 +105,7 @@ def spam(
                     "value": v,
                 }
 
+                print(f"Sending record: {message}")
                 producer.produce(
                     topic=topic,
                     key=key_serializer(
@@ -115,10 +116,13 @@ def spam(
                         message,
                         SerializationContext(topic, MessageField.VALUE),
                     ),
+                    on_delivery=producer_callback,
                 )
-                producer.flush()
-                print(f"Record: {message}")
-
+                
+                remaining = producer.flush(timeout=5.0)
+                if remaining:
+                    print(f"Failed to flush all messages. Still {remaining} in queue.")
+                
             time.sleep(max(0, prev_time + interval - time.time()))
             prev_time += interval
     except KafkaException as e:
