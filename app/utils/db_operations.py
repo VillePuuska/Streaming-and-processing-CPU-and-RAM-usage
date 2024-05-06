@@ -15,7 +15,12 @@ def get_latest_data(pg_conn: str) -> pd.DataFrame:
         """
     )
     try:
-        res = duckdb.sql("FROM pg.public.latest_measurements_avg").df()
+        res = duckdb.sql(
+            """
+            FROM pg.public.latest_measurements_avg
+            ORDER BY machine_id, measurement_name
+            """
+        ).df()
     finally:
         duckdb.sql("DETACH pg")
     return res
