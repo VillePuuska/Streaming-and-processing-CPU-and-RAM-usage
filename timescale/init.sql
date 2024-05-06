@@ -38,3 +38,14 @@ CREATE OR REPLACE VIEW measurements_last_minute AS (
     FROM measurements
     WHERE window_time >= now() - INTERVAL '1 minute' -- only the last minute
 );
+
+CREATE OR REPLACE VIEW latest_measurements_avg AS (
+    SELECT
+        machine_id,
+        measurement_name,
+        last(avg_value, window_start) AS avg_value
+    FROM measurements
+    GROUP BY
+        machine_id,
+        measurement_name
+);
