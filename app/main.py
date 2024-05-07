@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+import datetime
 from utils.db_operations import get_latest_data, get_last_minute_data
 
 REFRESH_INTERVAL = 1.0
@@ -13,6 +14,8 @@ chart2 = st.empty()
 
 header3 = st.empty()
 dataframe3 = st.empty()
+
+timestamp = st.empty()
 
 while True:
     start_time = time.time()
@@ -35,5 +38,8 @@ while True:
 
     header3.header("Latest data:")
     dataframe3.dataframe(data=latest_data, hide_index=True)
+
+    ts = datetime.datetime.now()
+    timestamp.caption(f"Data last updated: {ts.strftime('%d.%m.%Y %H:%M:%S')}")
 
     time.sleep(max(0.0, start_time + REFRESH_INTERVAL - time.time()))

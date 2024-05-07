@@ -7,22 +7,28 @@ def get_latest_data(pg_conn: str) -> pd.DataFrame:
     Function returns a Pandas dataframe of the latest average measurements
     in Postgres/Timescale from the view latest_measurements_avg.
     """
-    duckdb.sql(
-        f"""
-        INSTALL postgres;
-        LOAD postgres;
-        ATTACH '{pg_conn}' AS pg (TYPE POSTGRES);
-        """
-    )
     try:
+        duckdb.sql(f"ATTACH '{pg_conn}' AS pg (TYPE POSTGRES)")
         res = duckdb.sql(
             """
             FROM pg.public.latest_measurements_avg
             ORDER BY machine_id, measurement_name
             """
         ).df()
+    except:
+        return pd.DataFrame(
+            {
+                "machine_id": [],
+                "measurement_name": [],
+                "window_start": [],
+                "avg_value": [],
+            }
+        )
     finally:
-        duckdb.sql("DETACH pg")
+        try:
+            duckdb.sql("DETACH pg")
+        except:
+            pass
     return res
 
 
@@ -32,14 +38,8 @@ def get_last_minute_data(pg_conn: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     last minute of CPU usage measurements and the second one contains the
     last minute of RAM usage measurements.
     """
-    duckdb.sql(
-        f"""
-        INSTALL postgres;
-        LOAD postgres;
-        ATTACH '{pg_conn}' AS pg (TYPE POSTGRES);
-        """
-    )
     try:
+        duckdb.sql(f"ATTACH '{pg_conn}' AS pg (TYPE POSTGRES)")
         duckdb.sql(
             """
             CREATE OR REPLACE TABLE last_min AS
@@ -58,6 +58,19 @@ def get_last_minute_data(pg_conn: str) -> tuple[pd.DataFrame, pd.DataFrame]:
             WHERE measurement_name = 'memory_usage'
             """
         ).df()
+    except:
+        res = pd.DataFrame(
+            {
+                "machine_id": [],
+                "measurement_name": [],
+                "window_start": [],
+                "avg_value": [],
+            }
+        )
+        return res, res
     finally:
-        duckdb.sql("DETACH pg")
+        try:
+            duckdb.sql("DETACH pg")
+        except:
+            pass
     return res_cpu, res_ram
