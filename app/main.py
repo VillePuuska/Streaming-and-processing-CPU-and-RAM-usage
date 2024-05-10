@@ -17,6 +17,8 @@ dataframe3 = st.empty()
 
 timestamp = st.empty()
 
+time_diff = st.empty()
+
 while True:
     start_time = time.time()
 
@@ -41,5 +43,7 @@ while True:
 
     ts = datetime.datetime.now()
     timestamp.caption(f"Data last updated: {ts.strftime('%d.%m.%Y %H:%M:%S')}")
+
+    time_diff.caption(f"Took {time.time()-start_time:.4f} sec to refresh.")
 
     time.sleep(max(0.0, start_time + REFRESH_INTERVAL - time.time()))
