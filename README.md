@@ -24,9 +24,12 @@ Running the project (note: the instructions assume you're running the commands f
 docker exec kafka1 /bin/bash -c "kafka-topics --create --topic measurements --bootstrap-server localhost:9092"
 ```
 - Open _two_ shells and activate the virtual environment with the dependencies of this project in _both_ of the shells: `poetry shell`
-- Start producing measurements in one of the shells: `python measurement_spammer/spam_measurements.py` (add `--help` to see info on parameters)
-- In the other shell, start the Flink job that processes the stream and sinks to Postgres/Timescale: `python flink/process_stream.py` (add `--help` to see info on parameters)
-- To run and view the Streamlit app, run `python -m streamlit run app/main.py` and open `localhost:8501` in your browser
+- Start producing measurements in one of the shells: `python measurement_spammer/spam_measurements.py` (add `--help` to see info on parameters).
+- In the other shell, start the Flink job that processes the stream and sinks to Postgres/Timescale: `python flink/process_stream.py` (add `--help` to see info on parameters).
+- To run and view the Streamlit app, open yet another shell, open the virtual environment with `poetry shell`, and run `python -m streamlit run app/main.py` to start the app. Then you can access the app at `localhost:8501` in your browser.
+- You can pass parameters to the app by running `python -m streamlit run app/main.py -- --param`; note the extra `--`. Currently the supported parameters are:
+  - `--refresh-interval (float)`: Interval for how often data on the page is refreshed. Default: 1.0
+  - `--pg-conn (text)`: Postgres connection string. Default: `postgresql://postgres:postgres@localhost:5432/`
 
 ---
 
