@@ -18,6 +18,7 @@ pandas = "~2"
 types-confluent-kafka = "^1.2.1"
 types-psutil = "^5.9.5.20240423"
 pandas-stubs = "~2"
+mypy = "^1.10.0"
 
 [build-system]
 requires = ["poetry-core"]

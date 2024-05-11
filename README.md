@@ -12,8 +12,8 @@ Initial idea and planned outline:
 ---
 
 Setup before running the project:
-- `poetry install` (add `--with dev` to include dev dependencies which are just stubs)
-- Download the JARs needed by Flink. The list of URLs to download from Maven Repository are in the file `flink/needed_jar_urls.txt`. The JARs should be placed in the directory `jars/`, but if you want to place them in a different directory, you can pass the directory path as the parameter `--jar-path` when running the Flink script `flink/process_stream.py`
+- `poetry install` (add `--with dev` to include dev dependencies which are just `mypy` and stubs)
+- Download the JARs needed by Flink. The list of URLs to download from Maven Repository are in the file `flink/needed_jar_urls.txt`. The JARs should be placed in the directory `jars/`, but if you want to place them in a different directory, you can pass the directory path as the parameter `--jar-path` when running the PyFlink script `flink/process_stream.py`
 - (optional) `docker compose --profile cc pull`
 
 Running the project (note: the instructions assume you're running the commands from the root of this repository):
@@ -27,3 +27,14 @@ docker exec kafka1 /bin/bash -c "kafka-topics --create --topic measurements --bo
 - Start producing measurements in one of the shells: `python measurement_spammer/spam_measurements.py` (add `--help` to see info on parameters)
 - In the other shell, start the Flink job that processes the stream and sinks to Postgres/Timescale: `python flink/process_stream.py` (add `--help` to see info on parameters)
 - To run and view the Streamlit app, run `python -m streamlit run app/main.py` and open `localhost:8501` in your browser
+
+---
+
+Running static type checks with `mypy`:
+- `poetry install --with dev` if you didn't install dev dependencies already.
+- `poetry shell`
+- To check the Streamlit app code: `python -m mypy app/`
+- To check the PyFlink script: `python -m mypy flink/`
+- To check the sciprt that sends measurements to Kafka: `python -m mypy measurement_spammer/`
+
+*Note:* `python -m mypy .` fails with `Duplicate module named "utils"` since there are `utils` modules under `app/` and `measurement_spammer/`.
