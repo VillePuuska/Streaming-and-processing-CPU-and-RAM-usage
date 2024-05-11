@@ -13,6 +13,7 @@ Initial idea and planned outline:
 
 Setup before running the project:
 - `poetry install` (add `--with dev` to include dev dependencies which are just stubs)
+- Download the JARs needed by Flink. The list of URLs to download from Maven Repository are in the file `flink/needed_jar_urls.txt`. The JARs should be placed in the directory `jars/`, but if you want to place them in a different directory, you can pass the directory path as the parameter `--jar-path` when running the Flink script `flink/process_stream.py`
 - (optional) `docker compose --profile cc pull`
 
 Running the project (note: the instructions assume you're running the commands from the root of this repository):
