@@ -2,15 +2,34 @@ import duckdb
 import pandas as pd
 
 
-def get_latest_data(pg_conn: str) -> pd.DataFrame:
+class Connection:
     """
-    Function returns a Pandas dataframe of the latest average measurements
-    in Postgres/Timescale from the view latest_measurements_avg.
+    Object to hold the connection to the database.
+
+    `pg_conn` is the connection string to the database.
+
+    Methods for getting data:
+    - get_latest_data: -> pd.DataFrame
+    - get_last_minute_data: -> tuple[pd.DataFrame, pd.DataFrame]
     """
-    with duckdb.connect() as conn:
+
+    def __init__(self, pg_conn: str) -> None:
+        self.conn = duckdb.connect()
+        self.conn.sql(
+            f"""
+            INSTALL postgres;
+            LOAD postgres;
+            ATTACH '{pg_conn}' AS pg (TYPE POSTGRES);
+            """
+        )
+
+    def get_latest_data(self) -> pd.DataFrame:
+        """
+        Method returns a Pandas dataframe of the latest average measurements
+        in Postgres/Timescale from the view latest_measurements_avg.
+        """
         try:
-            conn.sql(f"ATTACH '{pg_conn}' AS pg (TYPE POSTGRES)")
-            res = conn.sql(
+            res = self.conn.sql(
                 """
                 FROM pg.public.latest_measurements_avg
                 ORDER BY machine_id, measurement_name
@@ -25,31 +44,28 @@ def get_latest_data(pg_conn: str) -> pd.DataFrame:
                     "avg_value": [],
                 }
             )
-    return res
+        return res
 
-
-def get_last_minute_data(pg_conn: str) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Function returns two Pandas dataframes as a tuple. First one contains the
-    last minute of CPU usage measurements and the second one contains the
-    last minute of RAM usage measurements.
-    """
-    with duckdb.connect() as conn:
+    def get_last_minute_data(self) -> tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        Method returns two Pandas dataframes as a tuple. First one contains the
+        last minute of CPU usage measurements and the second one contains the
+        last minute of RAM usage measurements.
+        """
         try:
-            conn.sql(f"ATTACH '{pg_conn}' AS pg (TYPE POSTGRES)")
-            conn.sql(
+            self.conn.sql(
                 """
                 CREATE OR REPLACE TABLE last_min AS
                 FROM pg.public.measurements_last_minute
                 """
             )
-            res_cpu = conn.sql(
+            res_cpu = self.conn.sql(
                 """
                 FROM last_min
                 WHERE measurement_name = 'cpu_usage'
                 """
             ).df()
-            res_ram = conn.sql(
+            res_ram = self.conn.sql(
                 """
                 FROM last_min
                 WHERE measurement_name = 'memory_usage'
@@ -65,68 +81,4 @@ def get_last_minute_data(pg_conn: str) -> tuple[pd.DataFrame, pd.DataFrame]:
                 }
             )
             return res, res
-    return res_cpu, res_ram
-
-
-def get_latest_data_alt(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
-    """
-    Function returns a Pandas dataframe of the latest average measurements
-    in Postgres/Timescale from the view latest_measurements_avg.
-    """
-    try:
-        res = conn.sql(
-            """
-            FROM pg.public.latest_measurements_avg
-            ORDER BY machine_id, measurement_name
-            """
-        ).df()
-    except:
-        return pd.DataFrame(
-            {
-                "machine_id": [],
-                "measurement_name": [],
-                "window_start": [],
-                "avg_value": [],
-            }
-        )
-    return res
-
-
-def get_last_minute_data_alt(
-    conn: duckdb.DuckDBPyConnection,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Function returns two Pandas dataframes as a tuple. First one contains the
-    last minute of CPU usage measurements and the second one contains the
-    last minute of RAM usage measurements.
-    """
-    try:
-        conn.sql(
-            """
-            CREATE OR REPLACE TABLE last_min AS
-            FROM pg.public.measurements_last_minute
-            """
-        )
-        res_cpu = conn.sql(
-            """
-            FROM last_min
-            WHERE measurement_name = 'cpu_usage'
-            """
-        ).df()
-        res_ram = conn.sql(
-            """
-            FROM last_min
-            WHERE measurement_name = 'memory_usage'
-            """
-        ).df()
-    except:
-        res = pd.DataFrame(
-            {
-                "machine_id": [],
-                "measurement_name": [],
-                "window_start": [],
-                "avg_value": [],
-            }
-        )
-        return res, res
-    return res_cpu, res_ram
+        return res_cpu, res_ram
