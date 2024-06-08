@@ -118,11 +118,11 @@ def spam(
                     ),
                     on_delivery=producer_callback,
                 )
-                
-                remaining = producer.flush(timeout=5.0)
-                if remaining:
-                    print(f"Failed to flush all messages. Still {remaining} in queue.")
-                
+
+            remaining = producer.flush(timeout=5.0)
+            if remaining:
+                print(f"Failed to flush all messages. Still {remaining} in queue.")
+
             time.sleep(max(0, prev_time + interval - time.time()))
             prev_time += interval
     except KafkaException as e:

@@ -59,18 +59,22 @@ class Connection:
                 FROM pg.public.measurements_last_minute
                 """
             )
+
             res_cpu = self.conn.sql(
                 """
                 FROM last_min
                 WHERE measurement_name = 'cpu_usage'
                 """
             ).df()
+            res_cpu["machine_id"] = res_cpu["machine_id"].astype(str)
+
             res_ram = self.conn.sql(
                 """
                 FROM last_min
                 WHERE measurement_name = 'memory_usage'
                 """
             ).df()
+            res_ram["machine_id"] = res_ram["machine_id"].astype(str)
         except:
             res = pd.DataFrame(
                 {

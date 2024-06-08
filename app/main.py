@@ -23,13 +23,13 @@ from utils.db_operations import Connection
 def main(refresh_interval: float, pg_conn: str) -> None:
     conn = Connection(pg_conn=pg_conn)
 
-    header1 = st.empty()
+    st.header("Last minute CPU usage:")
     chart1 = st.empty()
 
-    header2 = st.empty()
+    st.header("Last minute RAM usage:")
     chart2 = st.empty()
 
-    header3 = st.empty()
+    st.header("Latest data:")
     dataframe3 = st.empty()
 
     timestamp = st.empty()
@@ -42,14 +42,6 @@ def main(refresh_interval: float, pg_conn: str) -> None:
         latest_data = conn.get_latest_data()
         last_minute_data_cpu, last_minute_data_ram = conn.get_last_minute_data()
 
-        last_minute_data_cpu["machine_id"] = last_minute_data_cpu["machine_id"].astype(
-            str
-        )
-        last_minute_data_ram["machine_id"] = last_minute_data_ram["machine_id"].astype(
-            str
-        )
-
-        header1.header("Last minute CPU usage:")
         chart1.line_chart(
             data=last_minute_data_cpu,
             x="window_start",
@@ -57,7 +49,6 @@ def main(refresh_interval: float, pg_conn: str) -> None:
             color="machine_id",
         )
 
-        header2.header("Last minute RAM usage:")
         chart2.line_chart(
             data=last_minute_data_ram,
             x="window_start",
@@ -65,7 +56,6 @@ def main(refresh_interval: float, pg_conn: str) -> None:
             color="machine_id",
         )
 
-        header3.header("Latest data:")
         dataframe3.dataframe(data=latest_data, hide_index=True)
 
         ts = datetime.datetime.now()
